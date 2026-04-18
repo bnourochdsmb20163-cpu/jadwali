@@ -14,7 +14,7 @@ import { moroccoData, subjectsData, collegeLevels, highschoolLevels } from '../d
 //   6. Click Deploy and copy the Web App URL
 //   7. Paste it below replacing 'YOUR_SCRIPT_ID'
 // ============================================
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxVdn8442qrIu0pscNG-kTvPaI80zGdddSSIF0va9W6wzWn2u248rrrnoG2wo5pYMs-9g/exec';
 
 interface FormData {
   [key: string]: string | number | boolean | string[];
