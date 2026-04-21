@@ -73,16 +73,24 @@ export default function Services() {
   const [selectedSubjectsIds, setSelectedSubjectsIds] = useState<string[]>([]);
 
   // Dialog
-  const [showResumeDialog, setShowResumeDialog] = useState(false);
   const [isCorrection, setIsCorrection] = useState(false);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   
-  // Modal for New/Old request (if needed)
+  // Modal for New/Old request
   const [showChoiceModal, setShowChoiceModal] = useState(false);
   const [choiceMade, setChoiceMade] = useState(false);
 
   const formRef = useRef<HTMLFormElement>(null);
   const stepContentRef = useRef<HTMLDivElement>(null);
+
+  // ---------- Helper to safely get form value as string ----------
+  const getFormString = (key: string, defaultValue: string = ''): string => {
+    const val = formData[key];
+    if (typeof val === 'string') return val;
+    if (typeof val === 'number') return val.toString();
+    if (typeof val === 'boolean') return val ? 'true' : 'false';
+    return defaultValue;
+  };
 
   // ---------- تحميل البيانات المحفوظة تلقائياً عند تحميل الصفحة ----------
   useEffect(() => {
@@ -280,6 +288,7 @@ export default function Services() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    // Store all values as strings to avoid type conflicts
     setFormData({ ...formData, [name]: value });
   };
 
@@ -340,21 +349,16 @@ export default function Services() {
     }
   };
 
-  const startNewRequest = () => {
-    localStorage.removeItem(STORAGE_KEY);
-    window.location.reload();
-  };
-
   const buildReviewData = () => {
     const lines: string[] = [];
     lines.push('=== طلب خدمة إنتاج استعمال الزمن ===');
     if (isCorrection) lines.push('🔁 **هذا الطلب هو تصحيح لطلب سابق**');
     lines.push('');
     lines.push('📌 معلومات المؤسسة:');
-    lines.push(`• اسم المؤسسة: ${(formData.institutionName as string) || '—'}`);
-    lines.push(`• رقم الهاتف: ${(formData.phone as string) || '—'}`);
-    lines.push(`• الجهة: ${selectedRegion === 'other' ? (formData.otherRegion as string) : selectedRegion || '—'}`);
-    lines.push(`• الإقليم: ${selectedProvince === 'other' ? (formData.otherProvince as string) : selectedProvince || '—'}`);
+    lines.push(`• اسم المؤسسة: ${getFormString('institutionName', '—')}`);
+    lines.push(`• رقم الهاتف: ${getFormString('phone', '—')}`);
+    lines.push(`• الجهة: ${selectedRegion === 'other' ? getFormString('otherRegion', '—') : selectedRegion || '—'}`);
+    lines.push(`• الإقليم: ${selectedProvince === 'other' ? getFormString('otherProvince', '—') : selectedProvince || '—'}`);
     lines.push(`• الجماعة: ${selectedCommune === 'other' ? otherCommuneText : selectedCommune || '—'}`);
     lines.push('');
     lines.push('🏫 نوع المؤسسة:');
@@ -412,12 +416,12 @@ export default function Services() {
     if (serviceType === 'special' && specialCaseNotes) lines.push(`• ملاحظات الحالة الخاصة: ${specialCaseNotes}`);
     lines.push('');
     lines.push('🕐 توقيتات العمل:');
-    lines.push(`• الدخول صباحًا: ${(formData.morningStart as string) || '08:00'}`);
-    lines.push(`• الخروج صباحًا: ${(formData.morningEnd as string) || '12:00'}`);
-    lines.push(`• الدخول مساءً: ${(formData.eveningStart as string) || '14:00'}`);
-    lines.push(`• الخروج مساءً: ${(formData.eveningEnd as string) || '18:00'}`);
+    lines.push(`• الدخول صباحًا: ${getFormString('morningStart', '08:00')}`);
+    lines.push(`• الخروج صباحًا: ${getFormString('morningEnd', '12:00')}`);
+    lines.push(`• الدخول مساءً: ${getFormString('eveningStart', '14:00')}`);
+    lines.push(`• الخروج مساءً: ${getFormString('eveningEnd', '18:00')}`);
     lines.push(`• التوقيت المستمر: ${continuousTime === 'yes' ? 'نعم' : 'لا'}`);
-    lines.push(`• أيام عدم العمل: ${(formData.nonWorkDays as string) || '—'}`);
+    lines.push(`• أيام عدم العمل: ${getFormString('nonWorkDays', '—')}`);
     lines.push('');
     lines.push('📝 الملاحظات والوثائق:');
     if (formData.teacherConditions) lines.push(`• شروط الأساتذة: ${formData.teacherConditions}`);
@@ -573,11 +577,11 @@ export default function Services() {
                   <div className="form-grid">
                     <div className="form-group full-width">
                       <label>اسم المؤسسة <span className="required">*</span></label>
-                      <input type="text" name="institutionName" placeholder="ثانوية / إعدادية ..." required value={formData.institutionName || ''} onChange={handleInputChange} />
+                      <input type="text" name="institutionName" placeholder="ثانوية / إعدادية ..." required value={getFormString('institutionName')} onChange={handleInputChange} />
                     </div>
                     <div className="form-group full-width">
                       <label>رقم الهاتف للتواصل <span className="required">*</span></label>
-                      <input type="tel" name="phone" placeholder="أدخل رقم الهاتف" required value={formData.phone || ''} onChange={handleInputChange} />
+                      <input type="tel" name="phone" placeholder="أدخل رقم الهاتف" required value={getFormString('phone')} onChange={handleInputChange} />
                     </div>
                     <div className="form-group">
                       <label>الجهة <span className="required">*</span></label>
@@ -586,7 +590,7 @@ export default function Services() {
                         {Object.keys(moroccoData).map(region => <option key={region} value={region}>{region}</option>)}
                         <option value="other">جهة أخرى</option>
                       </select>
-                      {selectedRegion === 'other' && <input type="text" name="otherRegion" placeholder="أدخل اسم الجهة" style={{ marginTop: '0.5rem' }} value={formData.otherRegion || ''} onChange={handleInputChange} />}
+                      {selectedRegion === 'other' && <input type="text" name="otherRegion" placeholder="أدخل اسم الجهة" style={{ marginTop: '0.5rem' }} value={getFormString('otherRegion')} onChange={handleInputChange} />}
                     </div>
                     <div className="form-group">
                       <label>الإقليم <span className="required">*</span></label>
@@ -595,7 +599,7 @@ export default function Services() {
                         {getProvinces().map(province => <option key={province} value={province}>{province}</option>)}
                         <option value="other">إقليم آخر</option>
                       </select>
-                      {selectedProvince === 'other' && <input type="text" name="otherProvince" placeholder="أدخل اسم الإقليم" style={{ marginTop: '0.5rem' }} value={formData.otherProvince || ''} onChange={handleInputChange} />}
+                      {selectedProvince === 'other' && <input type="text" name="otherProvince" placeholder="أدخل اسم الإقليم" style={{ marginTop: '0.5rem' }} value={getFormString('otherProvince')} onChange={handleInputChange} />}
                     </div>
                     <div className="form-group full-width">
                       <label>الجماعة <span className="required">*</span></label>
@@ -868,7 +872,7 @@ export default function Services() {
                 </div>
               )}
 
-              {/* STEP 9 */}
+              {/* STEP 9 - fixed type errors */}
               {currentStep === 9 && (
                 <div className="form-step active">
                   <div className="step-header">
@@ -879,12 +883,12 @@ export default function Services() {
                     </div>
                   </div>
                   <div className="form-grid">
-                    <div className="form-group"><label>توقيت الدخول صباحًا</label><input type="time" name="morningStart" value={formData.morningStart || '08:00'} onChange={handleInputChange} /></div>
-                    <div className="form-group"><label>توقيت الخروج صباحًا</label><input type="time" name="morningEnd" value={formData.morningEnd || '12:00'} onChange={handleInputChange} /></div>
-                    <div className="form-group"><label>توقيت الدخول مساءً</label><input type="time" name="eveningStart" value={formData.eveningStart || '14:00'} onChange={handleInputChange} /></div>
-                    <div className="form-group"><label>توقيت الخروج مساءً</label><input type="time" name="eveningEnd" value={formData.eveningEnd || '18:00'} onChange={handleInputChange} /></div>
+                    <div className="form-group"><label>توقيت الدخول صباحًا</label><input type="time" name="morningStart" value={getFormString('morningStart', '08:00')} onChange={handleInputChange} /></div>
+                    <div className="form-group"><label>توقيت الخروج صباحًا</label><input type="time" name="morningEnd" value={getFormString('morningEnd', '12:00')} onChange={handleInputChange} /></div>
+                    <div className="form-group"><label>توقيت الدخول مساءً</label><input type="time" name="eveningStart" value={getFormString('eveningStart', '14:00')} onChange={handleInputChange} /></div>
+                    <div className="form-group"><label>توقيت الخروج مساءً</label><input type="time" name="eveningEnd" value={getFormString('eveningEnd', '18:00')} onChange={handleInputChange} /></div>
                     <div className="form-group full-width"><label className="toggle-label">هل يعتمد التوقيت المستمر؟</label><div className="toggle-row"><label className="radio-option"><input type="radio" name="continuousTime" value="yes" checked={continuousTime === 'yes'} onChange={(e) => setContinuousTime(e.target.value)} /> نعم</label><label className="radio-option"><input type="radio" name="continuousTime" value="no" checked={continuousTime === 'no'} onChange={(e) => setContinuousTime(e.target.value)} /> لا</label></div></div>
-                    <div className="form-group full-width"><label>أيام أو فترات عدم العمل</label><textarea name="nonWorkDays" rows={2} placeholder="مثال: السبت صباحًا، الجمعة بعد الزوال..." value={formData.nonWorkDays || ''} onChange={handleInputChange}></textarea></div>
+                    <div className="form-group full-width"><label>أيام أو فترات عدم العمل</label><textarea name="nonWorkDays" rows={2} placeholder="مثال: السبت صباحًا، الجمعة بعد الزوال..." value={getFormString('nonWorkDays')} onChange={handleInputChange}></textarea></div>
                   </div>
                 </div>
               )}
@@ -900,15 +904,15 @@ export default function Services() {
                     </div>
                   </div>
                   <div className="form-grid">
-                    <div className="form-group full-width"><label>شروط خاصة بالأساتذة</label><textarea name="teacherConditions" rows={4} placeholder="مثال: الأستاذ فلان لا يتاح إلا صباحًا — الأستاذة فلانة تدرس في مؤسستين..." value={formData.teacherConditions || ''} onChange={handleInputChange}></textarea></div>
-                    <div className="form-group full-width"><label>رغبات تنظيمية</label><textarea name="orgWishes" rows={4} placeholder="مثال: تركيز الحصص في أيام معينة — توزيع خاص لمواد..." value={formData.orgWishes || ''} onChange={handleInputChange}></textarea></div>
-                    <div className="form-group full-width"><label>ملاحظات إضافية</label><textarea name="additionalNotes" rows={3} placeholder="أي ملاحظات أخرى ترغب في إضافتها..." value={formData.additionalNotes || ''} onChange={handleInputChange}></textarea></div>
+                    <div className="form-group full-width"><label>شروط خاصة بالأساتذة</label><textarea name="teacherConditions" rows={4} placeholder="مثال: الأستاذ فلان لا يتاح إلا صباحًا — الأستاذة فلانة تدرس في مؤسستين..." value={getFormString('teacherConditions')} onChange={handleInputChange}></textarea></div>
+                    <div className="form-group full-width"><label>رغبات تنظيمية</label><textarea name="orgWishes" rows={4} placeholder="مثال: تركيز الحصص في أيام معينة — توزيع خاص لمواد..." value={getFormString('orgWishes')} onChange={handleInputChange}></textarea></div>
+                    <div className="form-group full-width"><label>ملاحظات إضافية</label><textarea name="additionalNotes" rows={3} placeholder="أي ملاحظات أخرى ترغب في إضافتها..." value={getFormString('additionalNotes')} onChange={handleInputChange}></textarea></div>
                     <div className="form-group full-width"><label>روابط الملفات الداعمة (Google Drive أو واتساب)</label><input type="text" name="supportFilesLinks" placeholder="أدخل الروابط مفصولة بفواصل" value={supportFilesLinks} onChange={(e) => setSupportFilesLinks(e.target.value)} /></div>
                   </div>
                 </div>
               )}
 
-              {/* STEP 11 - MODIFIED */}
+              {/* STEP 11 */}
               {currentStep === 11 && (
                 <div className="form-step active">
                   <div className="step-header">
@@ -935,15 +939,14 @@ export default function Services() {
                     </div>
                   </div>
 
-                  {/* مراجعة كاملة */}
                   <div className="pricing-summary" style={{ marginBottom: '2rem' }}>
                     <h4>📋 مراجعة كاملة لجميع البيانات</h4>
                     <div className="review-section">
                       <h5>📌 معلومات المؤسسة</h5>
-                      <div className="review-row"><span>اسم المؤسسة:</span><span>{(formData.institutionName as string) || '—'}</span></div>
-                      <div className="review-row"><span>رقم الهاتف:</span><span>{(formData.phone as string) || '—'}</span></div>
-                      <div className="review-row"><span>الجهة:</span><span>{selectedRegion === 'other' ? (formData.otherRegion as string) : selectedRegion || '—'}</span></div>
-                      <div className="review-row"><span>الإقليم:</span><span>{selectedProvince === 'other' ? (formData.otherProvince as string) : selectedProvince || '—'}</span></div>
+                      <div className="review-row"><span>اسم المؤسسة:</span><span>{getFormString('institutionName', '—')}</span></div>
+                      <div className="review-row"><span>رقم الهاتف:</span><span>{getFormString('phone', '—')}</span></div>
+                      <div className="review-row"><span>الجهة:</span><span>{selectedRegion === 'other' ? getFormString('otherRegion', '—') : selectedRegion || '—'}</span></div>
+                      <div className="review-row"><span>الإقليم:</span><span>{selectedProvince === 'other' ? getFormString('otherProvince', '—') : selectedProvince || '—'}</span></div>
                       <div className="review-row"><span>الجماعة:</span><span>{selectedCommune === 'other' ? otherCommuneText : selectedCommune || '—'}</span></div>
                     </div>
                     <div className="review-section">
@@ -1008,10 +1011,10 @@ export default function Services() {
                     </div>
                     <div className="review-section">
                       <h5>🕐 توقيتات العمل</h5>
-                      <div className="review-row"><span>الصباح:</span><span>{(formData.morningStart as string) || '08:00'} — {(formData.morningEnd as string) || '12:00'}</span></div>
-                      <div className="review-row"><span>المساء:</span><span>{(formData.eveningStart as string) || '14:00'} — {(formData.eveningEnd as string) || '18:00'}</span></div>
+                      <div className="review-row"><span>الصباح:</span><span>{getFormString('morningStart', '08:00')} — {getFormString('morningEnd', '12:00')}</span></div>
+                      <div className="review-row"><span>المساء:</span><span>{getFormString('eveningStart', '14:00')} — {getFormString('eveningEnd', '18:00')}</span></div>
                       <div className="review-row"><span>التوقيت المستمر:</span><span>{continuousTime === 'yes' ? 'نعم' : 'لا'}</span></div>
-                      <div className="review-row"><span>أيام عدم العمل:</span><span>{(formData.nonWorkDays as string) || '—'}</span></div>
+                      <div className="review-row"><span>أيام عدم العمل:</span><span>{getFormString('nonWorkDays', '—')}</span></div>
                     </div>
                     {(formData.teacherConditions || formData.orgWishes || formData.additionalNotes || supportFilesLinks) && (
                       <div className="review-section">
@@ -1024,7 +1027,6 @@ export default function Services() {
                     )}
                   </div>
 
-                  {/* Pricing */}
                   <div className="pricing-summary">
                     <h4>التسعيرة التقديرية لطلبك</h4>
                     <div className="pricing-details">
@@ -1057,7 +1059,6 @@ export default function Services() {
                     </div>
                   </div>
 
-                  {/* Copy Button */}
                   <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                     <button type="button" className="btn-primary" onClick={handleCopyReview} style={{ background: '#25d366', boxShadow: '0 4px 20px rgba(37,211,102,0.4)' }}>
                       📋 نسخ جميع المعلومات للواتساب
@@ -1120,7 +1121,7 @@ export default function Services() {
         </div>
       </section>
 
-      {/* New/Old request modal (global) */}
+      {/* New/Old request modal */}
       {showChoiceModal && (
         <div className="modal-overlay open">
           <div className="modal-box">
