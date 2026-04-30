@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const WHATSAPP_NUMBER = '212612345678';
+const WHATSAPP_NUMBER = '212651011102';
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}`;
 
 export default function Contact() {
@@ -56,7 +56,7 @@ export default function Contact() {
                 <h3>واتساب</h3>
                 <p>متاح للتواصل السريع — اضغط على الرقم للتواصل مباشرة</p>
                 <a href={WHATSAPP_LINK} className="contact-link" target="_blank" rel="noopener noreferrer">
-                  +212 612 345 678
+                  +212651011102
                 </a>
               </div>
 
