@@ -160,8 +160,8 @@ function Footer() {
         <div className="footer-contact">
           <h5>تواصل معنا</h5>
           <p>
-            <a href="https://wa.me/212612345678" className="contact-link" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--blue-light)' }}>
-              WhatsApp: 0612345678
+            <a href="https://wa.me/212651011102" className="contact-link" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--blue-light)' }}>
+              WhatsApp: 0651011102
             </a>
           </p>
           <p>⏰ نعمل طوال أيام الأسبوع</p>
@@ -179,7 +179,7 @@ function Footer() {
 function WhatsAppFloat() {
   return (
     <a
-      href="https://wa.me/212612345678"
+      href="https://wa.me/212651011102"
       className="whatsapp-float"
       target="_blank"
       rel="noopener noreferrer"
